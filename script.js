@@ -32,18 +32,32 @@ async function initializeApp() {
     console.warn("Firebase not available, using local storage only");
   }
 
-  // Listen for auth state changes
-  onAuthStateChanged((user) => {
-    if (user) {
-      setAuthenticated(true);
-      showApp();
-      loadAndRenderEntries();
-      setupRealtimeSync();
-    } else {
-      setAuthenticated(false);
-      showLogin();
-    }
-  });
+  // Check if using test credentials
+  const testUserId = sessionStorage.getItem("test-user-uid");
+  if (testUserId) {
+    setAuthenticated(true);
+    showApp();
+    loadAndRenderEntries();
+    return;
+  }
+
+  // Listen for auth state changes (Firebase)
+  if (typeof onAuthStateChanged === 'function') {
+    onAuthStateChanged((user) => {
+      if (user) {
+        setAuthenticated(true);
+        showApp();
+        loadAndRenderEntries();
+        setupRealtimeSync();
+      } else {
+        setAuthenticated(false);
+        showLogin();
+      }
+    });
+  } else {
+    console.warn("Firebase auth not available");
+    showLogin();
+  }
 }
 
 function setAuthenticated(value) {
@@ -86,9 +100,31 @@ loginForm.addEventListener("submit", async (event) => {
 
   try {
     loginError.textContent = "Signing in...";
-    await signInUser(email, password);
-    loginError.textContent = "";
-    loginForm.reset();
+    
+    // Test credentials for development/testing
+    const TEST_EMAIL = "test@jswmi.com";
+    const TEST_PASSWORD = "password123";
+    
+    // Check if using test credentials
+    if (email === TEST_EMAIL && password === TEST_PASSWORD) {
+      setAuthenticated(true);
+      loginError.textContent = "";
+      loginForm.reset();
+      // Set a mock user for local testing
+      sessionStorage.setItem("test-user-uid", "test-user-123");
+      showApp();
+      loadAndRenderEntries();
+      return;
+    }
+    
+    // Try Firebase authentication if configured
+    if (typeof signInUser === 'function') {
+      await signInUser(email, password);
+      loginError.textContent = "";
+      loginForm.reset();
+    } else {
+      loginError.textContent = "Invalid email or password.";
+    }
   } catch (error) {
     loginError.textContent = error.message || "Invalid email or password.";
   }
@@ -96,8 +132,20 @@ loginForm.addEventListener("submit", async (event) => {
 
 logoutButton?.addEventListener("click", async () => {
   try {
+    // Check if using test credentials
+    const testUserId = sessionStorage.getItem("test-user-uid");
+    if (testUserId) {
+      sessionStorage.removeItem("test-user-uid");
+      loginForm.reset();
+      loginError.textContent = "";
+      showLogin();
+      return;
+    }
+    
     stopRealtimeSync();
-    await signOutUser();
+    if (typeof signOutUser === 'function') {
+      await signOutUser();
+    }
     loginForm.reset();
     loginError.textContent = "";
     showLogin();
