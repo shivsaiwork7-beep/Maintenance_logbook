@@ -1,5 +1,4 @@
-const STORAGE_KEY = "maintenance-logbook-entries";
-
+// DOM Elements
 const form = document.getElementById("entry-form");
 const entriesList = document.getElementById("entries-list");
 const emptyState = document.getElementById("entries-empty");
@@ -15,16 +14,141 @@ const summaryFollowup = document.getElementById("summary-followup");
 const statToday = document.getElementById("stat-today");
 const statFollowups = document.getElementById("stat-followups");
 const statHours = document.getElementById("stat-hours");
+const loginScreen = document.getElementById("login-screen");
+const loginForm = document.getElementById("login-form");
+const loginError = document.getElementById("login-error");
+const logoutButton = document.getElementById("logout-button");
+const appContent = document.getElementById("app-content");
+const syncStatus = document.getElementById("sync-status");
+const syncText = document.getElementById("sync-text");
 
-let storedEntries = loadEntries();
-let entries = storedEntries.filter((entry) => entry.shiftIncharge && entry.shiftIncharge.toString().trim() !== "");
+let entries = [];
+let isOnline = false;
 
-if (storedEntries.length !== entries.length) {
-  saveEntries(entries);
+// Initialize Firebase and set up auth listeners
+async function initializeApp() {
+  const firebaseReady = await initializeFirebase();
+  if (!firebaseReady) {
+    console.warn("Firebase not available, using local storage only");
+  }
+
+  // Listen for auth state changes
+  onAuthStateChanged((user) => {
+    if (user) {
+      setAuthenticated(true);
+      showApp();
+      loadAndRenderEntries();
+      setupRealtimeSync();
+    } else {
+      setAuthenticated(false);
+      showLogin();
+    }
+  });
 }
 
-setTodayDate();
-render();
+function setAuthenticated(value) {
+  sessionStorage.setItem("maintenance-logbook-auth", value ? "true" : "false");
+}
+
+function showApp() {
+  loginScreen.style.display = "none";
+  appContent.style.display = "block";
+  updateSyncIndicator(true);
+}
+
+function showLogin() {
+  loginScreen.style.display = "flex";
+  appContent.style.display = "none";
+  updateSyncIndicator(false);
+}
+
+function updateSyncIndicator(isLoggedIn) {
+  if (!isLoggedIn) {
+    syncStatus.style.backgroundColor = "#999"; // Gray
+    syncText.textContent = "Offline";
+    return;
+  }
+
+  if (isOnline) {
+    syncStatus.style.backgroundColor = "#22c55e"; // Green
+    syncText.textContent = "Synced";
+  } else {
+    syncStatus.style.backgroundColor = "#f59e0b"; // Amber
+    syncText.textContent = "Syncing...";
+  }
+}
+
+loginForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const formData = new FormData(loginForm);
+  const email = formData.get("email").trim();
+  const password = formData.get("password").trim();
+
+  try {
+    loginError.textContent = "Signing in...";
+    await signInUser(email, password);
+    loginError.textContent = "";
+    loginForm.reset();
+  } catch (error) {
+    loginError.textContent = error.message || "Invalid email or password.";
+  }
+});
+
+logoutButton?.addEventListener("click", async () => {
+  try {
+    stopRealtimeSync();
+    await signOutUser();
+    loginForm.reset();
+    loginError.textContent = "";
+    showLogin();
+  } catch (error) {
+    console.error("Logout error:", error);
+  }
+});
+
+// Initialize app when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+  initializeApp();
+}
+
+// Load entries from cloud storage (async)
+async function loadAndRenderEntries() {
+  try {
+    updateSyncIndicator(false); // Show syncing
+    const loadedEntries = await loadEntriesFromCloud();
+    entries = loadedEntries.filter((entry) => entry.shiftIncharge && entry.shiftIncharge.toString().trim() !== "");
+    
+    // Clean up entries without shiftIncharge
+    if (loadedEntries.length !== entries.length) {
+      await saveEntriesToCloud(entries);
+    }
+
+    setTodayDate();
+    render();
+    isOnline = true;
+    updateSyncIndicator(true); // Show synced
+  } catch (error) {
+    console.error("Error loading entries:", error);
+    updateSyncIndicator(false);
+  }
+}
+
+// Set up real-time sync
+function setupRealtimeSync() {
+  try {
+    syncEntriesRealtime((data) => {
+      const filteredEntries = data.filter((entry) => entry.shiftIncharge && entry.shiftIncharge.toString().trim() !== "");
+      entries = filteredEntries;
+      isOnline = true;
+      render();
+      updateSyncIndicator(true);
+    });
+  } catch (error) {
+    console.error("Error setting up real-time sync:", error);
+  }
+}
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -51,7 +175,17 @@ form.addEventListener("submit", (event) => {
   };
 
   entries = [entry, ...entries].slice(0, 50);
-  saveEntries(entries);
+  
+  // Save to cloud (async)
+  updateSyncIndicator(false); // Show syncing
+  saveEntriesToCloud(entries).then(() => {
+    isOnline = true;
+    updateSyncIndicator(true);
+  }).catch((error) => {
+    console.error("Error saving entry:", error);
+    updateSyncIndicator(false);
+  });
+  
   form.reset();
   setTodayDate();
   render();
@@ -140,59 +274,6 @@ function exportEntriesAsWorkbook(rows, fileName) {
   XLSX.utils.book_append_sheet(workbook, worksheet, "Today Logs");
   XLSX.writeFile(workbook, fileName);
 }
-  const headers = [
-    "Shift",
-    "Shift Incharge",
-    "Technician name",
-    "Work Date",
-    "Site / Location",
-    "Work From",
-    "Work To",
-    "Breakdown minutes",
-    "Sub equipment",
-    "Equipment serviced",
-    "Spare parts used",
-    "Status",
-    "Job executed",
-    "Follow-up actions",
-    "Executed by",
-    "Verified by",
-  ];
-
-  const csvRows = [headers.join(",")];
-
-  for (const entry of rows) {
-    const values = [
-      entry.shift || "",
-      entry.shiftIncharge || "",
-      entry.technician || "",
-      entry.workDate,
-      entry.site,
-      entry.fromTime || "",
-      entry.toTime || "",
-      entry.breakdownTime != null ? String(entry.breakdownTime) : "",
-      entry.subEquipment || "",
-      entry.equipment || "",
-      entry.spareParts || "",
-      entry.status || "",
-      entry.workDone || "",
-      entry.followUp || "",
-      entry.executedBy || "",
-      entry.verifiedBy || "",
-    ];
-    csvRows.push(values.map(csvEscape).join(","));
-  }
-
-  const blob = new Blob([csvRows.join("\r\n")], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
 
 function csvEscape(value) {
   const stringValue = String(value ?? "");
@@ -202,18 +283,12 @@ function csvEscape(value) {
   return stringValue;
 }
 
-function loadEntries() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveEntries(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
+// Cloud storage functions moved to firebase-config.js
+// These are now handled by:
+// - loadEntriesFromCloud() - loads from Firebase
+// - saveEntriesToCloud() - saves to Firebase
+// - loadEntriesLocal() - local fallback
+// - saveEntriesLocal() - local fallback
 
 function setTodayDate() {
   form.workDate.value = new Date().toISOString().slice(0, 10);

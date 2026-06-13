@@ -3,11 +3,12 @@
 A simple static website for technicians to record daily maintenance work, capture follow-up actions, and review recent log entries.
 
 ## Features
-
+- Login Page
 - Technician daily log entry form
 - Recent entry feed with search and status filtering
 - Browser-local storage for saved entries
 - Responsive dashboard-style layout
+- All days log entries in excel format 
 
 ## Run
 

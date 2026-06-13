@@ -37,6 +37,79 @@ body {
   font-family: "Inter", sans-serif;
 }
 
+#login-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(24, 32, 42, 0.12);
+}
+
+#app-content {
+  display: none;
+}
+
+.login-card {
+  width: min(420px, 100%);
+  padding: 2rem;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 32px 80px rgba(19, 26, 33, 0.18);
+  border: 1px solid rgba(24, 32, 42, 0.08);
+}
+
+.login-brand {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.login-brand img {
+  width: 160px;
+  max-width: 100%;
+  height: auto;
+}
+
+.login-card h1 {
+  margin: 0 0 0.5rem;
+  font-size: 2rem;
+}
+
+.login-card p {
+  margin: 0 0 1.5rem;
+  color: var(--muted);
+}
+
+.login-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.login-form label {
+  display: grid;
+  gap: 0.5rem;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.login-form input {
+  width: 100%;
+  border-radius: 16px;
+  border: 1px solid rgba(24, 32, 42, 0.16);
+  padding: 0.9rem 1rem;
+  background: #fff;
+}
+
+.login-error {
+  min-height: 1.4rem;
+  margin: 0;
+  color: var(--warning);
+  font-size: 0.95rem;
+}
+
 body::before {
   content: "";
   position: fixed;
