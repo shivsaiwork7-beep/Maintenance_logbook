@@ -166,7 +166,14 @@ async function loadAndRenderEntries() {
   try {
     updateSyncIndicator(false); // Show syncing
     const loadedEntries = await loadEntriesFromCloud();
-    entries = loadedEntries.filter((entry) => entry.shiftIncharge && entry.shiftIncharge.toString().trim() !== "");
+    entries = Array.isArray(loadedEntries)
+  ? loadedEntries.filter(
+      entry =>
+        entry &&
+        entry.shiftIncharge &&
+        entry.shiftIncharge.toString().trim() !== ""
+    )
+  : [];
     
     // Clean up entries without shiftIncharge
     if (loadedEntries.length !== entries.length) {
