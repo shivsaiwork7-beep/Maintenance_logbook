@@ -37,79 +37,6 @@ body {
   font-family: "Inter", sans-serif;
 }
 
-#login-screen {
-  position: fixed;
-  inset: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  background: rgba(24, 32, 42, 0.12);
-}
-
-#app-content {
-  display: none;
-}
-
-.login-card {
-  width: min(420px, 100%);
-  padding: 2rem;
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 32px 80px rgba(19, 26, 33, 0.18);
-  border: 1px solid rgba(24, 32, 42, 0.08);
-}
-
-.login-brand {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1.5rem;
-}
-
-.login-brand img {
-  width: 160px;
-  max-width: 100%;
-  height: auto;
-}
-
-.login-card h1 {
-  margin: 0 0 0.5rem;
-  font-size: 2rem;
-}
-
-.login-card p {
-  margin: 0 0 1.5rem;
-  color: var(--muted);
-}
-
-.login-form {
-  display: grid;
-  gap: 1rem;
-}
-
-.login-form label {
-  display: grid;
-  gap: 0.5rem;
-  color: var(--ink);
-  font-weight: 600;
-}
-
-.login-form input {
-  width: 100%;
-  border-radius: 16px;
-  border: 1px solid rgba(24, 32, 42, 0.16);
-  padding: 0.9rem 1rem;
-  background: #fff;
-}
-
-.login-error {
-  min-height: 1.4rem;
-  margin: 0;
-  color: var(--warning);
-  font-size: 0.95rem;
-}
-
 body::before {
   content: "";
   position: fixed;
@@ -710,11 +637,21 @@ textarea:focus {
     width: min(100% - 0.5rem, 1180px);
   }
 
-  .hero-copy,
-  .hero-panel,
-  .surface {
-    border-radius: 18px;
-  }
+.hero-copy,
+.hero-panel,
+.surface{
+
+  background:rgba(15,25,40,.75);
+
+  backdrop-filter:blur(18px);
+
+  border:1px solid rgba(255,255,255,.08);
+
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.45);
+
+  color:white;
+}
 
   .hero-copy,
   .hero-panel,
@@ -738,3 +675,387 @@ textarea:focus {
   }
 }
 
+/* =======================================================
+   MODERN INDUSTRIAL DASHBOARD THEME
+   Paste at end of styles.css
+======================================================= */
+
+:root{
+  --glass-bg: rgba(255,255,255,.08);
+  --glass-border: rgba(255,255,255,.12);
+  --text-light:#d7e3ea;
+  --cyan:#00c2cb;
+}
+
+/* Background */
+
+body{
+  margin:0;
+  min-height:100vh;
+
+  background:
+  linear-gradient(
+    rgba(5,15,30,.82),
+    rgba(5,15,30,.90)
+  ),
+  url("https://images.unsplash.com/photo-1565008447742-97f6f38c985c?auto=format&fit=crop&w=1920&q=80");
+
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  background-attachment:fixed;
+
+  color:white;
+  font-family:"Inter",sans-serif;
+}
+/* Ambient lights */
+
+.ambient{
+  position:fixed;
+  width:500px;
+  height:500px;
+  border-radius:50%;
+  filter:blur(120px);
+  z-index:-1;
+  opacity:.45;
+}
+
+.ambient-left{
+  top:-150px;
+  left:-150px;
+  background:#0d5c63;
+}
+
+.ambient-right{
+  bottom:-150px;
+  right:-150px;
+  background:#1e88e5;
+}
+
+/* Hero Layout */
+
+.hero{
+  width:min(1400px,calc(100% - 2rem));
+  margin:2rem auto;
+
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:2rem;
+}
+
+/* Glass Cards */
+
+.hero-copy,
+.hero-panel,
+.surface{
+
+  background:var(--glass-bg);
+
+  backdrop-filter:blur(20px);
+
+  border:1px solid var(--glass-border);
+
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.35);
+
+  color:white;
+}
+
+/* Logo */
+
+.logo{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  padding:1rem;
+
+  background:rgba(255,255,255,.05);
+
+  border-radius:24px;
+
+  border:1px solid rgba(255,255,255,.1);
+}
+
+.logo img{
+  width:180px;
+
+  background:white;
+
+  padding:12px;
+
+  border-radius:16px;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.25);
+}
+
+/* Hero Title */
+
+h1{
+  font-size:clamp(3rem,6vw,5rem);
+  font-weight:800;
+  color:#ffffff;
+}
+
+/* Text */
+
+.lead{
+  color:var(--text-light);
+  font-size:1.1rem;
+  line-height:1.8;
+  max-width:700px;
+}
+
+.section-note,
+.panel-card p,
+.entry-date,
+.hero-stats dt,
+.panel-mini-grid span{
+  color:var(--text-light);
+}
+
+/* Buttons */
+
+.button.primary{
+
+  background:
+    linear-gradient(
+      135deg,
+      #0d5c63,
+      #00c2cb
+    );
+
+  color:white;
+
+  border:none;
+
+  box-shadow:
+    0 10px 25px rgba(0,194,203,.25);
+}
+
+.button.primary:hover{
+
+  transform:translateY(-3px);
+
+  box-shadow:
+    0 15px 30px rgba(0,194,203,.35);
+}
+
+.button.secondary,
+.button.ghost{
+
+  background:rgba(255,255,255,.08);
+
+  color:white;
+
+  border:1px solid rgba(255,255,255,.15);
+}
+
+/* Form Labels */
+
+label{
+  color:white;
+  font-weight:600;
+}
+
+/* Inputs */
+
+input,
+textarea,
+select{
+
+  width:100%;
+
+  background:rgba(255,255,255,.08);
+
+  color:white;
+
+  border:1px solid rgba(255,255,255,.15);
+
+  border-radius:16px;
+
+  padding:14px;
+
+  transition:.3s;
+}
+
+input::placeholder,
+textarea::placeholder{
+  color:#d0d7de;
+}
+
+input:focus,
+textarea:focus,
+select:focus{
+
+  border-color:var(--cyan);
+
+  box-shadow:
+    0 0 0 4px rgba(0,194,203,.2);
+}
+
+/* Hero Stats */
+
+.hero-stats div{
+
+  background:rgba(255,255,255,.08);
+
+  border:1px solid rgba(255,255,255,.08);
+
+  backdrop-filter:blur(10px);
+}
+
+.hero-stats dd{
+
+  color:#00e5ff;
+
+  font-size:1.7rem;
+
+  font-weight:700;
+}
+
+/* Panels */
+
+.panel-card,
+.panel-mini-grid article{
+
+  background:rgba(255,255,255,.05);
+
+  border:1px solid rgba(255,255,255,.08);
+
+}
+
+/* Entry Cards */
+
+.entry-card{
+
+  background:rgba(255,255,255,.05);
+
+  border:1px solid rgba(255,255,255,.08);
+
+  backdrop-filter:blur(15px);
+
+}
+
+.entry-card:hover{
+
+  transform:translateY(-6px);
+
+  box-shadow:
+    0 15px 30px rgba(0,0,0,.35);
+}
+
+.entry-meta div{
+
+  background:rgba(255,255,255,.08);
+
+  border:1px solid rgba(255,255,255,.08);
+
+  color:white;
+}
+
+.entry-section p,
+.entry-meta dd{
+  color:white;
+}
+
+/* Scrollbar */
+
+::-webkit-scrollbar{
+  width:10px;
+}
+
+::-webkit-scrollbar-track{
+  background:#091521;
+}
+
+::-webkit-scrollbar-thumb{
+  background:#0d5c63;
+  border-radius:10px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+  background:#00c2cb;
+}
+
+/* Mobile */
+
+@media(max-width:980px){
+
+  .hero{
+    grid-template-columns:1fr;
+  }
+
+}
+/* ===== INDUSTRIAL TEXT COLORS ===== */
+
+h1,
+h2,
+h3,
+h4{
+    color:#ffffff !important;
+}
+
+/* Labels and descriptions */
+
+p,
+label,
+dt,
+.lead,
+.section-note,
+.entry-date{
+    color:#cbd5e1 !important;
+}
+
+/* Green values */
+
+dd,
+.hero-stats dd,
+.panel-mini-grid strong,
+.entry-status{
+    color: white !important;
+    font-weight:700;
+}
+
+/* Section tags */
+
+.section-kicker,
+.eyebrow{
+    color:#38bdf8 !important;
+    font-weight:600;
+}
+
+/* Entry content */
+
+.entry-work,
+.entry-followup,
+.entry-spareparts{
+    color:#e2e8f0 !important;
+}
+
+/* Inputs */
+
+input,
+textarea,
+select{
+    color:#ffffff !important;
+}
+
+input::placeholder,
+textarea::placeholder{
+    color:#94a3b8 !important;
+}
+
+select option{
+    background:#0f172a;
+    color:white;
+}
+
+/* Hero stats highlight */
+
+.hero-stats div{
+    border-left:4px solid white;
+    padding-left:12px;
+}

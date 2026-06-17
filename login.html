@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maintenance Logbook Login</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Inter',sans-serif;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:
+    linear-gradient(
+        rgba(0,0,0,.65),
+        rgba(0,0,0,.65)
+    ),
+    url("images/plant-img.png");
+
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    background-attachment:fixed;
+}
+.login-card{
+    width:420px;
+    padding:40px;
+    border-radius:24px;
+
+    background:rgba(255,255,255,.12);
+    backdrop-filter:blur(20px);
+
+    border:1px solid rgba(255,255,255,.2);
+
+    box-shadow:
+    0 20px 60px rgba(0,0,0,.35);
+
+    color:white;
+
+    animation:fadeUp .7s ease;
+}
+
+@keyframes fadeUp{
+    from{
+        opacity:0;
+        transform:translateY(30px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.logo{
+    text-align:center;
+}
+
+.logo img{
+    width:110px;
+    background:white;
+    padding:10px;
+    border-radius:16px;
+}
+
+.title{
+    text-align:center;
+    margin-top:18px;
+}
+
+.title h1{
+    font-size:28px;
+    margin-bottom:8px;
+}
+
+.title p{
+    color:#d6d6d6;
+    font-size:14px;
+}
+
+.badge{
+    display:inline-block;
+    margin-top:15px;
+    background:#0d5c63;
+    padding:8px 16px;
+    border-radius:50px;
+    font-size:12px;
+    font-weight:600;
+}
+
+.form{
+    margin-top:30px;
+}
+
+.input-group{
+    position:relative;
+    margin-bottom:18px;
+}
+
+.input-group input{
+    width:100%;
+    padding:14px 16px;
+    border:none;
+    border-radius:12px;
+
+    background:rgba(255,255,255,.15);
+    color:white;
+
+    outline:none;
+}
+
+.input-group input::placeholder{
+    color:#ddd;
+}
+
+.input-group input:focus{
+    box-shadow:0 0 0 3px rgba(13,92,99,.4);
+}
+
+.login-btn{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+
+    background:linear-gradient(135deg,#0d5c63,#18a999);
+
+    color:white;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+
+    transition:.3s;
+}
+
+.login-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 10px 25px rgba(24,169,153,.35);
+}
+
+.footer{
+    text-align:center;
+    margin-top:20px;
+    color:#ddd;
+    font-size:12px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="login-card">
+
+    <div class="logo">
+        <img src="images/jsw-logo.jpeg" alt="JSW Logo">
+    </div>
+
+    <div class="title">
+        <h1>Maintenance Logbook</h1>
+        <p>Daily Maintenance Tracker</p>
+
+        <div class="badge">
+            AUTHORIZED ACCESS ONLY
+        </div>
+    </div>
+
+    <div class="form">
+
+        <div class="input-group">
+            <input id="user" type="text" placeholder="Username">
+        </div>
+
+        <div class="input-group">
+            <input id="pass" type="password" placeholder="Password">
+        </div>
+
+        <button class="login-btn" onclick="login()">
+            Sign In
+        </button>
+
+    </div>
+
+    <div class="footer">
+        JSW MI Steel • Maintenance Department
+    </div>
+
+</div>
+
+<script>
+
+function login(){
+
+    const u=document.getElementById("user").value;
+    const p=document.getElementById("pass").value;
+
+    if(u==="admin" && p==="1234"){
+
+        localStorage.setItem("auth","true");
+
+        window.location.href="index.html";
+
+    }else{
+
+        alert("Invalid Username or Password");
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>

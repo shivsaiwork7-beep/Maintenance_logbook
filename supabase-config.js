@@ -1,11 +1,12 @@
-const SUPABASE_URL =
-  "https://jbrqoxtbulvkgtodbkmj.supabase.co";
+const SUPABASE_URL = "https://jbrqoxtbulvkgtodbkmj.supabase.co";
 
-const SUPABASE_KEY =
+const SUPABASE_ANON_KEY =
   "sb_publishable_0h_k9HKG9H7EFFeO2ne1vQ_bWARm_BU";
 
-// Create Supabase client
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
 
 /* =========================
    AUTH FUNCTIONS
