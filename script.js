@@ -1,3 +1,4 @@
+
 const STORAGE_KEY = "maintenance-logbook-entries";
 
 const form = document.getElementById("entry-form");
@@ -45,37 +46,61 @@ form.addEventListener("submit", (event) => {
 
   const entry = {
     id: crypto.randomUUID(),
-    technician: formData.get("technician")?.trim() || "",
+    technician: formData.get("technician"),
     workDate: formData.get("workDate"),
-    site: formData.get("site")?.trim() || "",
+    site: formData.get("site"),
     shift: formData.get("shift"),
-    shiftIncharge: formData.get("shiftIncharge")?.trim() || "",
+    shiftIncharge: formData.get("shiftIncharge"),
+
     fromTime: formData.get("from_time"),
     toTime: formData.get("to_time"),
+
+    equipment: formData.get("equipment"),
+    subEquipment: formData.get("subEquipment"),
+    spareParts: formData.get("spareParts"),
+
+    status: formData.get("status"),
+    workDone: formData.get("workDone"),
+    followUp: formData.get("followUp"),
+
+    executedBy: formData.get("executedBy"),
+    verifiedBy: formData.get("verifiedBy"),
+
     breakdownTime: calculateMinutes(
       formData.get("from_time"),
       formData.get("to_time")
     ),
-    subEquipment: formData.get("subEquipment")?.trim() || "",
-    equipment: formData.get("equipment")?.trim() || "",
-    spareParts: formData.get("spareParts")?.trim() || "",
-    status: formData.get("status"),
-    workDone: formData.get("workDone")?.trim() || "",
-    followUp: formData.get("followUp")?.trim() || "",
-    executedBy: formData.get("executedBy")?.trim() || "",
-    verifiedBy: formData.get("verifiedBy")?.trim() || "",
-    createdAt: Date.now(),
+
+    createdAt: Date.now()
   };
 
-  entries = [entry, ...entries].slice(0, 50);
+  entries.unshift(entry);
+
   saveEntries(entries);
+
+  render();
 
   form.reset();
   setTodayDate();
+});
+
+  function render() {
+    entriesList.innerHTML = "";
+
+    entries.forEach((e) => {
+      const node = template.content.cloneNode(true);
+
+      node.querySelector(".entry-date").textContent = e.workDate;
+      node.querySelector(".entry-title").textContent = `${e.site}`;
+
+      entriesList.appendChild(node);
+    });
+
+    emptyState.style.display = entries.length ? "none" : "block";
+  }
+
   render();
 
-  form.querySelector("input[name='technician']").focus();
-});
 
 /* ================= RESET ================= */
 form.addEventListener("reset", () => {
@@ -110,8 +135,8 @@ function exportTodayEntriesCsv() {
     "From",
     "To",
     "Minutes",
-    "Sub Equipment",
     "Equipment",
+    "Sub Equipment",
     "Spare Parts",
     "Status",
     "Work Done",
@@ -132,8 +157,8 @@ function exportTodayEntriesCsv() {
       e.fromTime,
       e.toTime,
       e.breakdownTime,
-      e.subEquipment,
       e.equipment,
+      e.subEquipment,
       e.spareParts,
       e.status,
       e.workDone,
@@ -142,7 +167,18 @@ function exportTodayEntriesCsv() {
       e.verifiedBy,
     ];
 
-    rows.push(values.map(csvEscape).join(","));
+    rows.push(
+  values.map(v => {
+    const str = String(v ?? "");
+
+    // force safe Excel CSV format
+    if (/[",\n]/.test(str)) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+
+    return str;
+  }).join(",")
+);
   }
 
   const blob = new Blob([rows.join("\n")], { type: "text/csv" });
@@ -184,14 +220,16 @@ function setTodayDate() {
 function calculateMinutes(from, to) {
   if (!from || !to) return 0;
 
-  let f = new Date("1970-01-01T" + from);
-  let t = new Date("1970-01-01T" + to);
+  const [fh, fm] = from.split(":").map(Number);
+  const [th, tm] = to.split(":").map(Number);
 
-  if (t < f) t.setDate(t.getDate() + 1);
+  let start = fh * 60 + fm;
+  let end = th * 60 + tm;
 
-  return Math.round((t - f) / 60000);
+  if (end < start) end += 24 * 60;
+
+  return end - start;
 }
-
 /* ================= RENDER ================= */
 function render() {
   const q = searchInput.value.toLowerCase();
@@ -199,7 +237,9 @@ function render() {
 
   const filtered = entries.filter((e) => {
     const matchText = Object.values(e).join(" ").toLowerCase().includes(q);
-    const matchStatus = status === "all" || e.status === status;
+    const matchStatus =
+  status === "all" ||
+  (e.status || "").trim().toLowerCase() === status.trim().toLowerCase();
     return matchText && matchStatus;
   });
 
@@ -217,10 +257,11 @@ function render() {
     node.querySelector(".entry-shift-name").textContent = e.shift;
     node.querySelector(".entry-tech").textContent = e.technician;
     node.querySelector(".entry-site").textContent = e.site;
-    node.querySelector(".entry-hours").textContent = e.breakdownTime;
+    node.querySelector(".entry-hours").textContent = e.breakdownTime ?? calculateMinutes(e.fromTime, e.toTime);
 
-    node.querySelector(".entry-sub-equipment").textContent = e.subEquipment;
+
     node.querySelector(".entry-equipment").textContent = e.equipment;
+    node.querySelector(".entry-sub-equipment").textContent = e.subEquipment;
 
     node.querySelector(".entry-work").textContent = e.workDone;
     node.querySelector(".entry-spareparts").textContent = e.spareParts;
