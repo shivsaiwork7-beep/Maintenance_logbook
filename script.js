@@ -112,43 +112,43 @@ searchInput.addEventListener("input", render);
 statusFilter.addEventListener("change", render);
 
 /* ================= EXPORT BUTTON ================= */
-if (exportButton) {
-  exportButton.addEventListener("click", exportTodayEntriesCsv);
-}
+document
+  .getElementById("download-csv")
+  .addEventListener("click", exportTodayEntriesExcel);
 
 /* ================= EXPORT CSV ================= */
-function exportTodayEntriesCsv() {
+function exportTodayEntriesExcel() {
   const today = new Date().toISOString().slice(0, 10);
-  const todayEntries = entries.filter((e) => e.workDate === today);
+  const todayEntries = entries.filter(e => e.workDate === today);
 
   if (!todayEntries.length) {
     alert("No entries for today.");
     return;
   }
 
-  const headers = [
-    "Shift",
-    "Shift Incharge",
-    "Technician",
-    "Work Date",
-    "Site",
-    "From",
-    "To",
-    "Minutes",
-    "Equipment",
-    "Sub Equipment",
-    "Spare Parts",
-    "Status",
-    "Work Done",
-    "Follow Up",
-    "Executed By",
-    "Verified By",
+  const data = [
+    [
+      "Shift",
+      "Shift Incharge",
+      "Technician",
+      "Work Date",
+      "Site",
+      "From",
+      "To",
+      "Minutes",
+      "Equipment",
+      "Sub Equipment",
+      "Spare Parts",
+      "Status",
+      "Work Done",
+      "Follow Up",
+      "Executed By",
+      "Verified By"
+    ]
   ];
 
-  const rows = [headers.join(",")];
-
-  for (const e of todayEntries) {
-    const values = [
+  todayEntries.forEach(e => {
+    data.push([
       e.shift,
       e.shiftIncharge,
       e.technician,
@@ -164,32 +164,26 @@ function exportTodayEntriesCsv() {
       e.workDone,
       e.followUp,
       e.executedBy,
-      e.verifiedBy,
-    ];
+      e.verifiedBy
+    ]);
+  });
 
-    rows.push(
-  values.map(v => {
-    const str = String(v ?? "");
+  const ws = XLSX.utils.aoa_to_sheet(data);
 
-    // force safe Excel CSV format
-    if (/[",\n]/.test(str)) {
-      return `"${str.replace(/"/g, '""')}"`;
-    }
+  // Auto-size columns
+  const colWidths = data[0].map((_, colIndex) => {
+    const maxLength = Math.max(
+      ...data.map(row => String(row[colIndex] || "").length)
+    );
+    return { wch: maxLength + 2 };
+  });
 
-    return str;
-  }).join(",")
-);
-  }
+  ws["!cols"] = colWidths;
 
-  const blob = new Blob([rows.join("\n")], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Maintenance Log");
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `maintenance-logbook-${today}.csv`;
-  a.click();
-
-  URL.revokeObjectURL(url);
+  XLSX.writeFile(wb, `maintenance-logbook-${today}.xlsx`);
 }
 
 /* ================= CSV ESCAPE ================= */
