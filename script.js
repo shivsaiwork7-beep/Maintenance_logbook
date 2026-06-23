@@ -1,3 +1,5 @@
+// script.js
+import { loadEntriesFromDb, saveEntryToDb } from "./supabase-config.js";
 
 const STORAGE_KEY = "maintenance-logbook-entries";
 
@@ -21,25 +23,30 @@ if(localStorage.getItem("auth") !== "true"){
   window.location.href = "login.html";
 }
 
-function logout(){
+// FIX: Attach logout to window so inline HTML onclick="logout()" can find it
+window.logout = function logout(){
   localStorage.removeItem("auth");
   window.location.href = "login.html";
 }
 
-let storedEntries = loadEntries();
-let entries = storedEntries.filter(
-  (entry) => entry.shiftIncharge && entry.shiftIncharge.toString().trim() !== ""
-);
+let entries = [];
 
-if (storedEntries.length !== entries.length) {
-  saveEntries(entries);
+init();
+
+async function init() {
+  // Pulls records and normalizes them into camelCase format
+  entries = await loadEntriesFromDb(); 
+
+  entries = entries.filter(
+    (entry) => entry.shiftIncharge && entry.shiftIncharge.toString().trim() !== ""
+  );
+
+  setTodayDate();
+  render();
 }
 
-setTodayDate();
-render();
-
 /* ================= SAVE ENTRY ================= */
-form.addEventListener("submit", (event) => {
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const formData = new FormData(form);
@@ -76,30 +83,14 @@ form.addEventListener("submit", (event) => {
 
   entries.unshift(entry);
 
-  saveEntries(entries);
+  // Safely transforms camelCase parameters to snake_case before sending
+  await saveEntryToDb(entry);
 
   render();
 
   form.reset();
   setTodayDate();
 });
-
-  function render() {
-    entriesList.innerHTML = "";
-
-    entries.forEach((e) => {
-      const node = template.content.cloneNode(true);
-
-      node.querySelector(".entry-date").textContent = e.workDate;
-      node.querySelector(".entry-title").textContent = `${e.site}`;
-
-      entriesList.appendChild(node);
-    });
-
-    emptyState.style.display = entries.length ? "none" : "block";
-  }
-
-  render();
 
 
 /* ================= RESET ================= */
@@ -112,9 +103,9 @@ searchInput.addEventListener("input", render);
 statusFilter.addEventListener("change", render);
 
 /* ================= EXPORT BUTTON ================= */
-document
-  .getElementById("download-csv")
-  .addEventListener("click", exportTodayEntriesExcel);
+if (exportButton) {
+  exportButton.addEventListener("click", exportTodayEntriesExcel);
+}
 
 /* ================= EXPORT CSV ================= */
 function exportTodayEntriesExcel() {
@@ -192,22 +183,12 @@ function csvEscape(value) {
   return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
 }
 
-/* ================= STORAGE ================= */
-function loadEntries() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  } catch {
-    return [];
-  }
-}
-
-function saveEntries(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
 
 /* ================= DATE ================= */
 function setTodayDate() {
-  form.workDate.value = new Date().toISOString().slice(0, 10);
+  if (form.workDate) {
+    form.workDate.value = new Date().toISOString().slice(0, 10);
+  }
 }
 
 /* ================= TIME CALC ================= */
@@ -232,8 +213,8 @@ function render() {
   const filtered = entries.filter((e) => {
     const matchText = Object.values(e).join(" ").toLowerCase().includes(q);
     const matchStatus =
-  status === "all" ||
-  (e.status || "").trim().toLowerCase() === status.trim().toLowerCase();
+      status === "all" ||
+      (e.status || "").trim().toLowerCase() === status.trim().toLowerCase();
     return matchText && matchStatus;
   });
 
